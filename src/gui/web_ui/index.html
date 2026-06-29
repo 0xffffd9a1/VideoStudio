@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoStudio</title>
+    <script type="text/javascript" src="/eel.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-layout" id="app">
+        <header class="app-header">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                </svg>
+                <h1>VideoStudio</h1>
+            </div>
+            <div class="header-actions">
+                <button id="btn-settings" title="Настройки">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-area">
+            <aside class="left-panel">
+                <!-- Плеер (фиксированная высота, не скроллится) -->
+                <div class="player-section" id="player-section">
+                    <video id="video-player" controls style="display:none;"></video>
+                    <div class="player-controls" id="player-controls" style="display:none;">
+                        <button id="btn-set-start">⏱️ Начало</button>
+                        <button id="btn-set-end">⏱️ Конец</button>
+                        <span id="current-time-display">00:00</span>
+                    </div>
+                    <div class="no-video-message" id="no-video-msg">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5">
+                            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                        </svg>
+                        <p>Выберите видеофайл для предпросмотра</p>
+                    </div>
+                </div>
+
+                <!-- Скроллируемая область для вкладок -->
+                <div class="scrollable-content">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="source-tab">Файл</button>
+                        <button class="tab" data-tab="queue-tab">Очередь (<span id="queue-count">0</span>)</button>
+                        <button class="tab" data-tab="presets-tab">Пресеты</button>
+                    </div>
+
+                    <div class="tab-content active" id="source-tab">
+                        <div class="source-card">
+                            <label for="source">Источник</label>
+                            <div class="source-row">
+                                <input type="text" id="source" placeholder="Ссылка YouTube или путь к файлу" autofocus>
+                                <button id="btn-browse">Обзор</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="queue-tab">
+                        <div class="batch-list" id="batch-list"></div>
+                        <div class="batch-actions">
+                            <button id="btn-add-to-batch">Добавить текущий</button>
+                            <button id="btn-run-batch" class="primary">Обработать всё</button>
+                            <button id="btn-clear-batch">Очистить</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="presets-tab">
+                        <div class="presets-list" id="presets-list"></div>
+                        <div class="presets-actions">
+                            <input type="text" id="preset-name" placeholder="Имя пресета">
+                            <button id="btn-save-preset">Сохранить текущие</button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="right-panel">
+                <!-- Правая панель без изменений -->
+                <div class="settings-panel">
+                    <div class="card">
+                        <label>Время</label>
+                        <div class="time-row">
+                            <div class="time-field">
+                                <input type="text" id="start" placeholder="Начало (ММ:СС)">
+                            </div>
+                            <div class="time-field">
+                                <input type="text" id="end" placeholder="Конец (ММ:СС)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <label for="mode">Режим</label>
+                        <select id="mode">
+                            <option value="video+audio">Видео + Аудио</option>
+                            <option value="audio">Только аудио</option>
+                            <option value="video">Только видео (без звука)</option>
+                        </select>
+                    </div>
+                    <div class="card">
+                        <label for="audio-filter">Аудио-фильтр</label>
+                        <select id="audio-filter">
+                            <option value="">Без фильтра</option>
+                            <option value="normalize">Нормализация громкости</option>
+                            <option value="volume_up">Усилить (+50%)</option>
+                            <option value="noise_reduce">Подавление шума</option>
+                        </select>
+                    </div>
+                    <div class="card">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="accurate">
+                            <span>Точная обрезка (перекодирование, медленно)</span>
+                        </label>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                    <button id="btn-process" class="primary">Обработать</button>
+                </div>
+                <div class="log-panel">
+                    <div class="log" id="log"></div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Модальное окно настроек -->
+        <div class="modal" id="settings-modal">
+            <div class="modal-content">
+                <h2>Настройки</h2>
+                <div class="setting-group">
+                    <label for="setting-output">Папка сохранения</label>
+                    <input type="text" id="setting-output" placeholder="Путь к папке">
+                    <button id="btn-browse-output">Обзор</button>
+                </div>
+                <div class="setting-group">
+                    <label for="setting-quality">Качество YouTube</label>
+                    <select id="setting-quality">
+                        <option value="best">Лучшее (4K)</option>
+                        <option value="1080p">Full HD (1080p)</option>
+                        <option value="720p">HD (720p)</option>
+                        <option value="audio_only">Только аудио</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="setting-theme">Тема</label>
+                    <select id="setting-theme">
+                        <option value="dark">Тёмная</option>
+                        <option value="light">Светлая</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-save-settings">Сохранить</button>
+                    <button id="btn-close-settings" class="secondary">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
